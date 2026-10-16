@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="vault_black">#000000</color>
+    <color name="terminal_green">#00E05A</color>
+    <color name="cyber_blue">#00B8FF</color>
+    <color name="amber">#FFB000</color>
+    <color name="blood_red">#FF2A3D</color>
+</resources>

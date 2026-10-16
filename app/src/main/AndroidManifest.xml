@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Safety net: the merged manifest must never acquire network access. -->
+    <uses-permission
+        android:name="android.permission.INTERNET"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"
+        tools:node="remove" />
+
+    <application
+        android:name=".OfflineVaultApplication"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:hasFragileUserData="true"
+        android:label="Offline Vault"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.OfflineVault"
+        android:usesCleartextTraffic="false"
+        tools:replace="android:allowBackup,android:fullBackupContent">
+        <!-- The UI/activity is deliberately deferred to Phase 2. -->
+    </application>
+</manifest>
