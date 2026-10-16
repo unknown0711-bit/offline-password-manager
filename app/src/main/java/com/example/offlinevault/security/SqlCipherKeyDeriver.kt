@@ -5,11 +5,11 @@ public class SqlCipherKeyDeriver {
     public fun derive(dek: DataEncryptionKey): ByteArray {
         val input = dek.copyBytes()
         return try {
-            HkdfSha256.derive(
-                inputKeyMaterial = input,
+            HkdfSha256.deriveKey(
+                ikm = input,
                 salt = SQLCIPHER_HKDF_SALT,
                 info = SQLCIPHER_HKDF_INFO,
-                length = AES_256_KEY_BYTES,
+                outputLengthBytes = AES_256_KEY_BYTES,
             )
         } finally {
             input.fill(0)

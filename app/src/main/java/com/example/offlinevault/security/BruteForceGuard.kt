@@ -33,11 +33,15 @@ public class AndroidBootClock(private val context: Context) : BootClock {
     override fun elapsedRealtimeMillis(): Long = SystemClock.elapsedRealtime()
 
     override fun bootCount(): Long = runCatching {
-        Settings.Global.getInt(
+        Settings.Global.getLong(
             context.contentResolver,
             Settings.Global.BOOT_COUNT,
         ).toLong()
-    }.getOrElse { 0L }
+    }.getOrElse {
+        // A reboot counter is a security input. Silently treating an unavailable
+        // counter as zero could weaken a pending lockout, so fail closed.
+        throw IllegalStateException("Android BOOT_COUNT is unavailable", it)
+    }
 }
 
 /**

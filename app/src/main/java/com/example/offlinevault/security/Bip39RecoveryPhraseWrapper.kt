@@ -185,7 +185,7 @@ public class Bip39RecoveryPhraseWrapper(
     private fun splitWords(phrase: CharArray): Array<CharArray> {
         val result = ArrayList<CharArray>(BIP39_WORD_COUNT_PHRASE)
         var start = -1
-        for (index in phrase.indices + phrase.size) {
+        for (index in 0..phrase.size) {
             val whitespace = index == phrase.size || phrase[index].isWhitespace()
             if (!whitespace && start < 0) start = index
             if (whitespace && start >= 0) {

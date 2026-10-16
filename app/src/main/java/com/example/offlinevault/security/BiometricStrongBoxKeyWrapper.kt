@@ -146,7 +146,16 @@ public class BiometricStrongBoxKeyWrapper(
                     ANDROID_KEYSTORE,
                 )
                     .getKeySpec(getKey(), KeyInfo::class.java) as KeyInfo
-                if (!keyInfo.isStrongBoxBacked) {
+                val isStrongBox = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    keyInfo.securityLevel == KeyProperties.SECURITY_LEVEL_STRONGBOX
+                } else {
+                    // API 30 has no public security-level accessor. The alias
+                    // was created by this class with setIsStrongBoxBacked(true);
+                    // still reject a key that is not hardware-backed.
+                    @Suppress("DEPRECATION")
+                    keyInfo.isInsideSecureHardware
+                }
+                if (!isStrongBox) {
                     throw StrongBoxUnavailableException(
                         "The existing keystore alias is not backed by StrongBox",
                     )

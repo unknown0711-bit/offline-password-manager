@@ -13,8 +13,9 @@
     <application
         android:name=".OfflineVaultApplication"
         android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="false"
-        android:hasFragileUserData="true"
+        android:icon="@drawable/ic_launcher"
         android:label="Offline Vault"
         android:supportsRtl="true"
         android:theme="@style/Theme.OfflineVault"
