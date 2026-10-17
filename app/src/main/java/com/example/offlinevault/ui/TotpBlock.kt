@@ -1,6 +1,5 @@
 package com.example.offlinevault.ui
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -60,13 +59,7 @@ public fun TotpBlock(
         Column(modifier = modifier) {
             Text("TIME-BASED ONE-TIME PASSWORD", style = MaterialTheme.typography.labelMedium)
             Row {
-                Text(
-                    text = code?.value ?: "------",
-                    modifier = Modifier.clickable {
-                        code?.value?.let { onCopy?.invoke(it.toCharArray()) }
-                    },
-                    style = MaterialTheme.typography.headlineMedium,
-                )
+                Text(code?.value ?: "------", style = MaterialTheme.typography.headlineMedium)
                 Spacer(Modifier.width(12.dp))
                 Text("${code?.remainingSeconds ?: periodSeconds}s", color = MaterialTheme.colorScheme.tertiary)
             }

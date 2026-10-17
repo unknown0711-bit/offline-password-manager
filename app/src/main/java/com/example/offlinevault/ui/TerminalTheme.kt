@@ -7,8 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.BasicSecureTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.TextFieldState
@@ -30,7 +29,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.offlinevault.R
@@ -165,20 +163,12 @@ public fun BasicSecureSecretField(
     }
     Column(modifier = modifier.fillMaxWidth()) {
         Text(label, style = MaterialTheme.typography.labelMedium)
-        BasicTextField(
-            value = state.text.toString(),
-            onValueChange = { value ->
-                state.edit { replace(0, length, value) }
-            },
+        BasicSecureTextField(
+            state = state,
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(
-                onDone = { submitHandler.onKeyboardAction {} },
-            ),
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface,
-            ),
-            visualTransformation = PasswordVisualTransformation(),
+            onKeyboardAction = submitHandler,
+            textStyle = MaterialTheme.typography.bodyLarge,
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         )
     }

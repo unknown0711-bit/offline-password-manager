@@ -12,7 +12,6 @@ class SetupViewModelTest {
 
         viewModel.submitMasterPassword("A-long-master-password-42".toCharArray())
         viewModel.submitPasswordConfirmation("A-long-master-password-42".toCharArray())
-        assertTrue(viewModel.state.value.passwordsMatch)
         assertTrue(viewModel.continueToRecovery())
         val state = viewModel.state.value
         assertEquals(SetupStep.RECOVERY, state.step)

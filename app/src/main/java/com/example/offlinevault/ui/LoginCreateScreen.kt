@@ -3,7 +3,6 @@ package com.example.offlinevault.ui
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,7 +24,7 @@ public fun LoginCreateScreen(
     }
     val error = state.error
     OfflineVaultTheme {
-        Column(modifier = Modifier.fillMaxSize().systemBarsPadding().padding(20.dp)) {
+        Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
             TerminalButton("BACK", onBack)
             Text("NEW LOGIN", style = MaterialTheme.typography.titleLarge)
             TerminalTextField(state.title, viewModel::setTitle, "TITLE")

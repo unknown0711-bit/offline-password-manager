@@ -1,6 +1,5 @@
 package com.example.offlinevault.ui
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -17,7 +16,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.example.offlinevault.login.LoginDetail
@@ -52,7 +50,7 @@ public fun LoginDetailScreen(
     onCopySecret: (CharArray) -> Unit,
 ) {
     OfflineVaultTheme {
-        Column(modifier = Modifier.fillMaxSize().systemBarsPadding().padding(20.dp)) {
+        Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
             TerminalButton("BACK", onBack)
             when {
                 state.loading -> Text("Loading login…")
@@ -71,12 +69,7 @@ private fun LoginDetailBody(
     onCopySecret: (CharArray) -> Unit,
 ) {
     Text(detail.title, style = MaterialTheme.typography.titleLarge)
-    Text(
-        text = detail.username.ifBlank { "(no username)" },
-        modifier = Modifier.clickable {
-            if (detail.username.isNotBlank()) onCopySecret(detail.username.toCharArray())
-        },
-    )
+    Text(detail.username.ifBlank { "(no username)" })
     if (detail.url.isNotBlank()) Text(detail.url, color = MaterialTheme.colorScheme.secondary)
     if (detail.tags.isNotEmpty()) Text(detail.tags.joinToString("  ") { "#$it" })
     if (detail.notes.isNotBlank()) {
@@ -90,10 +83,7 @@ private fun LoginDetailBody(
     if (secrets != null) {
         val password = secrets.password
         Text("PASSWORD", style = MaterialTheme.typography.labelMedium)
-        RevealedPassword(
-            password = password,
-            onClick = { onCopySecret(secrets.password) },
-        )
+        RevealedPassword(password)
         password.fill('\u0000')
         TerminalButton("COPY PASSWORD", onClick = {
             val copy = secrets.password
@@ -114,7 +104,7 @@ private fun LoginDetailBody(
 }
 
 @Composable
-private fun RevealedPassword(password: CharArray, onClick: () -> Unit) {
+private fun RevealedPassword(password: CharArray) {
     val builder = AnnotatedString.Builder()
     password.forEach { character ->
         val color = when {
@@ -126,9 +116,5 @@ private fun RevealedPassword(password: CharArray, onClick: () -> Unit) {
             append(character.toString())
         }
     }
-    Text(
-        text = builder.toAnnotatedString(),
-        modifier = Modifier.clickable(onClick = onClick),
-        style = MaterialTheme.typography.headlineSmall,
-    )
+    Text(builder.toAnnotatedString(), style = MaterialTheme.typography.headlineSmall)
 }
