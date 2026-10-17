@@ -1,9 +1,11 @@
-# Offline Vault — Phase 1
+# Offline Vault — Phase 6
 
 This repository is the command-line Android scaffold for a fully offline,
-SQLCipher-backed password manager and media vault. Phase 1 contains the secure
-key-management interfaces, field encryption, reboot-safe lockout guard, and the
-Room EAV database schema. It intentionally does not contain UI or ViewModels.
+SQLCipher-backed password manager and media vault. It contains the secure
+key-management foundation, reboot-safe lockout guard, Room EAV database schema,
+terminal login/autofill feature, first-launch setup wizard, and normal lock
+screen. The only supported device workflow uses Gradle and a connected physical
+Android device; Android Studio and emulators are intentionally out of scope.
 
 ## Requirements
 
@@ -12,13 +14,16 @@ Room EAV database schema. It intentionally does not contain UI or ViewModels.
 - Android SDK with platform 35 and build-tools 35.x
 - A connected physical Android device for install/smoke testing
 
-The Gradle wrapper is committed, Java is pinned in `.java-version`, and no
-global Gradle installation is required.
+The Gradle wrapper is committed, Java is pinned in `.java-version`, dependency
+versions are locked in `app/gradle.lockfile`, and no global Gradle installation
+is required. The repository also contains a Dockerfile that installs the JDK,
+Android command-line SDK, and project dependencies for a clean Linux build.
 
 ## Setup
 
 ```sh
 export ANDROID_HOME="$HOME/Android/Sdk"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
 export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
 ./gradlew --version
 ```
@@ -27,26 +32,53 @@ If the SDK is not already present, install platform 35 and build-tools 35.x
 with the Android command-line SDK tools. Do not use Android Studio or an
 emulator for this project.
 
-## Build and test
+## Build, run, test, and deploy
 
-The single offline-capable project check is:
+The single project check is:
 
 ```sh
-./gradlew test lintDebug assembleDebug --offline
+make test
 ```
 
-The first invocation requires the pinned dependencies to already be available
-in the local Gradle cache. A clean machine can populate that cache once using
-the same command without `--offline`; subsequent checks are offline.
+`make test` runs the complete JVM test suite, Android lint, and the debug APK
+build with `--offline`. The pinned dependencies must already be available in
+the local Gradle cache. A clean machine can populate that cache once with the
+same Gradle task without `--offline`; subsequent checks use the offline command.
 
-For an installable debug APK:
+For a local debug build:
+
+```sh
+./gradlew assembleDebug
+```
+
+Install and launch on a connected physical device:
+
+```sh
+make install
+adb shell am start -n com.example.offlinevault/.ui.MainActivity
+```
+
+The supported deployment target is a physical device with a StrongBox-capable
+biometric sensor. The first launch shows setup; later launches require the
+master password once after reboot before biometric unlock is permitted.
+
+To reproduce the build in Docker:
+
+```sh
+docker build -t offline-vault .
+docker run --rm offline-vault
+```
+
+The container runs `make test` as its default command. Device installation is
+performed from the host with `adb`; no emulator or Android Studio steps are
+part of the supported workflow.
+
+For an installable debug APK without `make install`:
 
 ```sh
 ./gradlew assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
-
-No emulator or Android Studio steps are part of the supported workflow.
 
 ## Security invariants
 
@@ -70,7 +102,7 @@ No emulator or Android Studio steps are part of the supported workflow.
   payload, nonce, and schema version are stored as bytes/metadata in the EAV
   table.
 
-## Phase 1 integration notes
+## Phase 1 security integration
 
 `VaultKeyManager.provision()` is the complete key-provisioning orchestration,
 but the future UI must pass a cipher authenticated by `BiometricPrompt` to the
@@ -80,6 +112,26 @@ database with `VaultDatabaseFactory`, and close both the database and DEK when
 the locked state is entered.
 
 The production BIP39 asset is `app/src/main/assets/bip39_english.txt`.
+
+## Phase 6 setup and session flow
+
+- On first launch, `SetupWizardScreen` collects a master password in secure
+  fields, shows strength feedback, generates a 24-word BIP39 phrase, and asks
+  for three randomly selected confirmation words.
+- The Activity passes a StrongBox encryption `CryptoObject` through
+  `BiometricPrompt` before `VaultSessionCoordinator.completeSetup()` persists
+  the three independent wrapped DEK records.
+- `WrappedVaultKeyStore` persists only wrapped ciphertext and the StrongBox key
+  alias. The plaintext password, phrase, DEK, and SQLCipher material remain
+  transient and are wiped at ownership boundaries.
+- The lock screen uses the persistent `BruteForceGuard` countdown and supports
+  master-password unlock plus Strong biometric unlock. Biometric unlock is
+  gated by `MasterPasswordBootGate` until the master password has succeeded
+  once during the current boot.
+- A successful session opens SQLCipher, installs `LoginUiSession`, installs the
+  unlocked autofill dependencies, and switches to `LoginListScreen`. Locking
+  the coordinator closes the database, clears process-local providers, and
+  wipes the in-memory DEK.
 
 ## Phase 2: Logins and Autofill
 
@@ -110,7 +162,7 @@ and terminal Compose screens under `app/src/main/java/com/example/offlinevault/u
   `LoginUiSession.install(...)` after the unlocked SQLCipher database and DEK
   session are ready. Both process-local seams default to locked/null.
 
-The launcher host is `com.example.offlinevault.ui.MainActivity`. It deliberately
-shows a locked terminal screen until the Phase 1 session coordinator installs
-the provider. It uses direct state switching rather than an animated navigation
-host.
+The launcher host is `com.example.offlinevault.ui.MainActivity`. It uses direct
+state switching rather than an animated navigation host and routes between
+setup, lock, and the Phase 2 login feature only after the session coordinator
+has completed the corresponding security operation.
