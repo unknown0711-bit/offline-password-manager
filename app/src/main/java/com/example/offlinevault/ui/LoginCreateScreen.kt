@@ -27,7 +27,7 @@ public fun LoginCreateScreen(
     OfflineVaultTheme {
         Column(modifier = Modifier.fillMaxSize().systemBarsPadding().padding(20.dp)) {
             TerminalButton("BACK", onBack)
-            Text("Add a login", style = MaterialTheme.typography.titleLarge)
+            Text("NEW LOGIN", style = MaterialTheme.typography.titleLarge)
             TerminalTextField(state.title, viewModel::setTitle, "TITLE")
             TerminalTextField(state.username, viewModel::setUsername, "USERNAME")
             TerminalTextField(state.url, viewModel::setUrl, "URL")

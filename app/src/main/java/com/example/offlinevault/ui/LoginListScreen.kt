@@ -37,14 +37,14 @@ public fun LoginListScreen(
 ) {
     OfflineVaultTheme {
         Column(modifier = Modifier.fillMaxSize().systemBarsPadding().padding(20.dp)) {
-            Text("Your vault", style = MaterialTheme.typography.titleLarge)
-            Text("Secure logins, available offline.", color = MaterialTheme.colorScheme.secondary)
+            Text("OFFLINE VAULT / LOGINS", style = MaterialTheme.typography.titleLarge)
+            Text("Secrets stay locked until you ask to reveal them.", color = MaterialTheme.colorScheme.secondary)
             Column(modifier = Modifier.padding(vertical = 16.dp)) {
                 TerminalButton("NEW LOGIN", onNewLogin)
                 TerminalButton("PASSWORD HEALTH", onHealth)
             }
             when {
-                state.loading -> Text("Loading logins…", color = MaterialTheme.colorScheme.primary)
+                state.loading -> Text("[ LOADING ]", color = MaterialTheme.colorScheme.primary)
                 state.error != null -> Text(state.error, color = MaterialTheme.colorScheme.error)
                 state.logins.isEmpty() -> Text("No login records yet.", color = MaterialTheme.colorScheme.tertiary)
                 else -> LoginItems(state.logins, onOpen)

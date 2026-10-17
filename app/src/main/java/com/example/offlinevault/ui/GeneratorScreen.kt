@@ -21,8 +21,8 @@ public fun GeneratorScreen(
     OfflineVaultTheme {
         Column(modifier = Modifier.fillMaxSize().systemBarsPadding().padding(20.dp)) {
             TerminalButton("BACK", onBack)
-            Text("Password generator", style = androidx.compose.material3.MaterialTheme.typography.titleLarge)
-            Text("Cryptographically random values that remain transient.")
+            Text("PASSWORD GENERATOR", style = androidx.compose.material3.MaterialTheme.typography.titleLarge)
+            Text("Cryptographically random characters; generated values are transient.")
             TerminalButton("GENERATE", { viewModel.generate() })
             state.password?.let { generated ->
                 BasicSecureSecretField(

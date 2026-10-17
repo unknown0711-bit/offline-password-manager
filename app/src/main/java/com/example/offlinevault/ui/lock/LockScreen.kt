@@ -1,7 +1,6 @@
 package com.example.offlinevault.ui.lock
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,8 +32,6 @@ import androidx.compose.ui.unit.dp
 import com.example.offlinevault.ui.OfflineVaultTheme
 import com.example.offlinevault.ui.TerminalButton
 import com.example.offlinevault.ui.TerminalCard
-import com.example.offlinevault.ui.VaultFieldShape
-import com.example.offlinevault.ui.VaultSecretFontFamily
 import com.example.offlinevault.ui.clearText
 
 /** Normal lock screen with transient password input and local countdown refresh. */
@@ -60,7 +57,7 @@ public fun LockScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
-                    "Unlock your vault",
+                    "OFFLINE VAULT / LOCKED",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -69,7 +66,7 @@ public fun LockScreen(
                     color = MaterialTheme.colorScheme.secondary,
                 )
                 when {
-                    state.loading -> Text("Checking vault status…", color = MaterialTheme.colorScheme.secondary)
+                    state.loading -> Text("[ LOADING LOCK STATE ]", color = MaterialTheme.colorScheme.secondary)
                     state.isLocked -> LockoutPanel(state)
                     else -> PasswordPanel(state, viewModel, onBiometricRequested)
                 }
@@ -97,7 +94,7 @@ public fun LockScreen(
 @Composable
 private fun LockoutPanel(state: LockUiState) {
     TerminalCard {
-        Text("Temporarily locked", color = MaterialTheme.colorScheme.error)
+        Text("BRUTE-FORCE DELAY", color = MaterialTheme.colorScheme.error)
         Spacer(Modifier.height(8.dp))
         Text(state.countdownLabel, color = MaterialTheme.colorScheme.tertiary)
         Text(
@@ -138,11 +135,11 @@ private fun PasswordPanel(
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         SecureLockField(fieldState, keyboardAction)
         Text(
-            if (state.authenticating) "Checking password…" else "Enter your master password",
+            if (state.authenticating) "[ CHECKING PASSWORD ]" else "Enter your master password",
             color = MaterialTheme.colorScheme.secondary,
         )
-                    TerminalButton(
-                        label = if (state.authenticating) "Checking…" else "Unlock",
+        TerminalButton(
+            label = if (state.authenticating) "CHECKING..." else "UNLOCK",
             onClick = {
                 val transient = fieldState.text.toString().toCharArray()
                 submit(transient)
@@ -150,7 +147,7 @@ private fun PasswordPanel(
         )
         if (state.biometricAvailable) {
             TerminalButton(
-                label = "Use biometrics",
+                label = "USE BIOMETRICS",
                 onClick = {
                     fieldState.clearText()
                     onBiometricRequested?.invoke() ?: viewModel.authenticateBiometric()
@@ -173,18 +170,16 @@ private fun SecureLockField(
         onValueChange = { value ->
             fieldState.edit { replace(0, length, value) }
         },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant, VaultFieldShape)
-                .border(1.dp, MaterialTheme.colorScheme.outline, VaultFieldShape)
-                .padding(horizontal = 12.dp, vertical = 11.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.65f))
+            .padding(horizontal = 12.dp, vertical = 11.dp),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(
             onDone = { keyboardAction.onKeyboardAction {} },
         ),
         textStyle = MaterialTheme.typography.bodyLarge.copy(
             color = MaterialTheme.colorScheme.onSurface,
-            fontFamily = VaultSecretFontFamily,
         ),
         visualTransformation = PasswordVisualTransformation(),
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),

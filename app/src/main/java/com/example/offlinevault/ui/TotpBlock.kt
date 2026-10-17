@@ -58,17 +58,14 @@ public fun TotpBlock(
     }
     TerminalCard {
         Column(modifier = modifier) {
-            Text("Authenticator code", style = MaterialTheme.typography.labelMedium)
+            Text("TIME-BASED ONE-TIME PASSWORD", style = MaterialTheme.typography.labelMedium)
             Row {
                 Text(
                     text = code?.value ?: "------",
                     modifier = Modifier.clickable {
                         code?.value?.let { onCopy?.invoke(it.toCharArray()) }
                     },
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontFamily = VaultSecretFontFamily,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    ),
+                    style = MaterialTheme.typography.headlineMedium,
                 )
                 Spacer(Modifier.width(12.dp))
                 Text("${code?.remainingSeconds ?: periodSeconds}s", color = MaterialTheme.colorScheme.tertiary)

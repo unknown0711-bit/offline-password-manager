@@ -22,11 +22,11 @@ public fun HealthReportScreen(viewModel: HealthReportViewModel, onBack: () -> Un
     OfflineVaultTheme {
         Column(modifier = Modifier.fillMaxSize().systemBarsPadding().padding(20.dp)) {
             TerminalButton("BACK", onBack)
-            Text("Password health", style = MaterialTheme.typography.titleLarge)
+            Text("PASSWORD HEALTH", style = MaterialTheme.typography.titleLarge)
             val error = state.error
             val report = state.report
             when {
-                state.loading -> Text("Analyzing passwords…", color = MaterialTheme.colorScheme.primary)
+                state.loading -> Text("[ ANALYZING ]", color = MaterialTheme.colorScheme.primary)
                 error != null -> Text(error, color = MaterialTheme.colorScheme.error)
                 report != null -> HealthReportBody(report)
             }
