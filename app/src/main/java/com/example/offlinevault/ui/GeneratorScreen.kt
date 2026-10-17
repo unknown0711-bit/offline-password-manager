@@ -3,6 +3,7 @@ package com.example.offlinevault.ui
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,7 +19,7 @@ public fun GeneratorScreen(
 ) {
     val state by viewModel.state.collectAsState()
     OfflineVaultTheme {
-        Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+        Column(modifier = Modifier.fillMaxSize().systemBarsPadding().padding(20.dp)) {
             TerminalButton("BACK", onBack)
             Text("PASSWORD GENERATOR", style = androidx.compose.material3.MaterialTheme.typography.titleLarge)
             Text("Cryptographically random characters; generated values are transient.")
