@@ -1,6 +1,7 @@
 package com.example.offlinevault.ui.setup
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import com.example.offlinevault.ui.OfflineVaultTheme
 import com.example.offlinevault.ui.TerminalButton
 import com.example.offlinevault.ui.TerminalCard
+import com.example.offlinevault.ui.VaultFieldShape
+import com.example.offlinevault.ui.VaultSecretFontFamily
 import com.example.offlinevault.ui.clearText
 import com.example.offlinevault.ui.lock.VaultUiCoordinator
 import kotlinx.coroutines.flow.collectLatest
@@ -107,16 +110,16 @@ private fun PasswordStep(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = "OFFLINE VAULT / FIRST LAUNCH",
+            text = "Set up your vault",
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.primary,
         )
         Text(
-            text = "Create the one password that unlocks this vault.",
+            text = "Create a master password to protect your offline vault.",
             color = MaterialTheme.colorScheme.onBackground,
         )
         TerminalCard {
-            Text("MASTER PASSWORD", color = MaterialTheme.colorScheme.secondary)
+            Text("Master password", color = MaterialTheme.colorScheme.secondary)
             Spacer(Modifier.height(8.dp))
             SecureInput(
                 fieldState = passwordFieldState,
@@ -142,7 +145,7 @@ private fun PasswordStep(
                 onSubmit = viewModel::submitPasswordConfirmation,
             )
             Text(
-                text = if (state.passwordsMatch) "passwords: MATCH" else "passwords: NOT CONFIRMED",
+                text = if (state.passwordsMatch) "Passwords match" else "Passwords not confirmed",
                 color = if (state.passwordsMatch) {
                     MaterialTheme.colorScheme.primary
                 } else {
@@ -162,7 +165,7 @@ private fun PasswordStep(
             }
             Spacer(Modifier.height(4.dp))
             TerminalButton(
-                "SHOW RECOVERY PHRASE",
+                "Show recovery phrase",
                 onClick = {
                     submitSecureField(passwordFieldState, viewModel::submitMasterPassword)
                     submitSecureField(confirmationFieldState, viewModel::submitPasswordConfirmation)
@@ -195,7 +198,7 @@ private fun RecoveryStep(
         item {
             Spacer(Modifier.height(12.dp))
             Text(
-                "RECOVERY PHRASE / ONE-TIME DISPLAY",
+                "Your recovery phrase",
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -213,12 +216,14 @@ private fun RecoveryStep(
                 Text(
                     phraseText,
                     color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = VaultSecretFontFamily,
+                    ),
                 )
             }
         }
         item {
-            Text("CONFIRM THREE RANDOM WORDS", color = MaterialTheme.colorScheme.secondary)
+            Text("Confirm three words", color = MaterialTheme.colorScheme.secondary)
             Text(
                 "Enter the requested words exactly as displayed. The phrase leaves memory after confirmation.",
                 color = MaterialTheme.colorScheme.onBackground,
@@ -234,6 +239,7 @@ private fun RecoveryStep(
                 label = { Text("word ${wordIndex + 1}") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
+                shape = VaultFieldShape,
             )
         }
         item {
@@ -241,7 +247,7 @@ private fun RecoveryStep(
                 Text(it, color = MaterialTheme.colorScheme.error)
             }
             TerminalButton(
-                label = "VERIFY & OPEN VAULT",
+                label = "Verify and open vault",
                 onClick = {
                     val transientAnswers = answers.map { it.toCharArray() }
                     val confirmed = viewModel.confirmRecoveryWords(transientAnswers)
@@ -259,7 +265,7 @@ private fun RecoveryStep(
 @Composable
 private fun CompleteStep(modifier: Modifier) {
     Column(modifier = modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("VAULT READY", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
+         Text("Vault ready", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
         Text("Continue to the login list.", color = MaterialTheme.colorScheme.secondary)
     }
 }
@@ -306,12 +312,14 @@ private fun SecureInput(
             onValueChange = { value -> fieldState.edit { replace(0, length, value) } },
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.65f))
+                .background(MaterialTheme.colorScheme.surfaceVariant, VaultFieldShape)
+                .border(1.dp, MaterialTheme.colorScheme.outline, VaultFieldShape)
                 .padding(horizontal = 12.dp, vertical = 11.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { submitHandler.onKeyboardAction {} }),
             textStyle = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.onSurface,
+                fontFamily = VaultSecretFontFamily,
             ),
             visualTransformation = PasswordVisualTransformation(),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
