@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +36,7 @@ public fun LoginListScreen(
     onHealth: () -> Unit,
 ) {
     OfflineVaultTheme {
-        Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+        Column(modifier = Modifier.fillMaxSize().systemBarsPadding().padding(20.dp)) {
             Text("OFFLINE VAULT / LOGINS", style = MaterialTheme.typography.titleLarge)
             Text("Secrets stay locked until you ask to reveal them.", color = MaterialTheme.colorScheme.secondary)
             Column(modifier = Modifier.padding(vertical = 16.dp)) {

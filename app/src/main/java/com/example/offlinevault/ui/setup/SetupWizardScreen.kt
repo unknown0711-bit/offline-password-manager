@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.text.BasicSecureTextField
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.TextFieldState
@@ -31,6 +33,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.offlinevault.ui.OfflineVaultTheme
 import com.example.offlinevault.ui.TerminalButton
@@ -53,7 +56,10 @@ public fun SetupWizardScreen(
 ) {
     val state by viewModel.state.collectAsState()
     OfflineVaultTheme {
-        Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Surface(
+            modifier = modifier.fillMaxSize().systemBarsPadding(),
+            color = MaterialTheme.colorScheme.background,
+        ) {
             when (state.step) {
                 SetupStep.PASSWORD -> PasswordStep(
                     state = state,
@@ -295,15 +301,19 @@ private fun SecureInput(
     }
     Column(modifier = modifier.fillMaxWidth()) {
         Text(label, color = MaterialTheme.colorScheme.secondary)
-        BasicSecureTextField(
-            state = fieldState,
+        BasicTextField(
+            value = fieldState.text.toString(),
+            onValueChange = { value -> fieldState.edit { replace(0, length, value) } },
             modifier = Modifier
                 .fillMaxWidth()
                 .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.65f))
                 .padding(horizontal = 12.dp, vertical = 11.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            onKeyboardAction = submitHandler,
-            textStyle = MaterialTheme.typography.bodyLarge,
+            keyboardActions = KeyboardActions(onDone = { submitHandler.onKeyboardAction {} }),
+            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+            ),
+            visualTransformation = PasswordVisualTransformation(),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         )
     }

@@ -1,8 +1,10 @@
 package com.example.offlinevault.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.text.AnnotatedString
@@ -50,7 +52,7 @@ public fun LoginDetailScreen(
     onCopySecret: (CharArray) -> Unit,
 ) {
     OfflineVaultTheme {
-        Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+        Column(modifier = Modifier.fillMaxSize().systemBarsPadding().padding(20.dp)) {
             TerminalButton("BACK", onBack)
             when {
                 state.loading -> Text("Loading login…")
@@ -69,7 +71,12 @@ private fun LoginDetailBody(
     onCopySecret: (CharArray) -> Unit,
 ) {
     Text(detail.title, style = MaterialTheme.typography.titleLarge)
-    Text(detail.username.ifBlank { "(no username)" })
+    Text(
+        text = detail.username.ifBlank { "(no username)" },
+        modifier = Modifier.clickable {
+            if (detail.username.isNotBlank()) onCopySecret(detail.username.toCharArray())
+        },
+    )
     if (detail.url.isNotBlank()) Text(detail.url, color = MaterialTheme.colorScheme.secondary)
     if (detail.tags.isNotEmpty()) Text(detail.tags.joinToString("  ") { "#$it" })
     if (detail.notes.isNotBlank()) {
@@ -83,7 +90,10 @@ private fun LoginDetailBody(
     if (secrets != null) {
         val password = secrets.password
         Text("PASSWORD", style = MaterialTheme.typography.labelMedium)
-        RevealedPassword(password)
+        RevealedPassword(
+            password = password,
+            onClick = { onCopySecret(secrets.password) },
+        )
         password.fill('\u0000')
         TerminalButton("COPY PASSWORD", onClick = {
             val copy = secrets.password
@@ -104,7 +114,7 @@ private fun LoginDetailBody(
 }
 
 @Composable
-private fun RevealedPassword(password: CharArray) {
+private fun RevealedPassword(password: CharArray, onClick: () -> Unit) {
     val builder = AnnotatedString.Builder()
     password.forEach { character ->
         val color = when {
@@ -116,5 +126,9 @@ private fun RevealedPassword(password: CharArray) {
             append(character.toString())
         }
     }
-    Text(builder.toAnnotatedString(), style = MaterialTheme.typography.headlineSmall)
+    Text(
+        text = builder.toAnnotatedString(),
+        modifier = Modifier.clickable(onClick = onClick),
+        style = MaterialTheme.typography.headlineSmall,
+    )
 }
