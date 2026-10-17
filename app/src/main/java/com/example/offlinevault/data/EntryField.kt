@@ -75,5 +75,6 @@ enum class FieldKind(val databaseValue: String) {
     SECRET("secret"),
     URL("url"),
     NUMBER("number"),
-    NOTE("note")
+    NOTE("note"),
+    MEDIA_METADATA("media_metadata")
 }

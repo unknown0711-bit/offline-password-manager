@@ -17,6 +17,9 @@ import com.example.offlinevault.autofill.VaultAutofillStore
 import com.example.offlinevault.data.VaultDatabase
 import com.example.offlinevault.data.VaultDatabaseFactory
 import com.example.offlinevault.login.LoginRepository
+import com.example.offlinevault.media.MediaRepository
+import com.example.offlinevault.media.MediaRepositoryFactory
+import com.example.offlinevault.media.MediaSession
 import com.example.offlinevault.security.AesGcmFieldEncryptor
 import com.example.offlinevault.security.BiometricStrongBoxKeyWrapper
 import com.example.offlinevault.security.BruteForceGuard
@@ -71,12 +74,14 @@ public class VaultSessionCoordinator(
     private val databaseFactory: VaultDatabaseFactory,
     private val fieldEncryptor: AesGcmFieldEncryptor,
     private val biometricWrapper: BiometricStrongBoxKeyWrapper,
+    private val mediaRepositoryFactory: MediaRepositoryFactory,
 ) : AutoCloseable {
     private val appContext: Context = context.applicationContext
 
     private var database: VaultDatabase? = null
     private var dek: DataEncryptionKey? = null
     private var loginRepository: LoginRepository? = null
+    private var mediaRepository: MediaRepository? = null
     private var pendingBiometric: PendingBiometric? = null
     private var autofillAuthenticationHandler: AutofillAuthenticationHandler? = null
 
@@ -98,6 +103,9 @@ public class VaultSessionCoordinator(
     /** Alias for hosts that prefer a getter-shaped API. */
     @Synchronized
     public fun getCurrentLoginRepository(): LoginRepository? = loginRepository
+
+    @Synchronized
+    public fun currentMediaRepository(): MediaRepository? = mediaRepository
 
     /** Creates the one-time recovery phrase without retaining it. */
     public fun generateRecoveryPhrase(): CharArray = keyManager.generateRecoveryPhrase()
@@ -307,10 +315,12 @@ public class VaultSessionCoordinator(
     public fun lock() {
         pendingBiometric = null
         LoginUiSession.lock()
+        MediaSession.clear()
         AutofillDependencies.reset()
         AutofillAuthentication.reset()
         autofillAuthenticationHandler = null
         loginRepository = null
+        mediaRepository = null
         val openDatabase = database
         val openDek = dek
         database = null
@@ -387,9 +397,11 @@ public class VaultSessionCoordinator(
     private fun installUnlocked(unlockedDek: DataEncryptionKey) {
         check(loginRepository == null) { "The vault is already unlocked" }
         var openedDatabase: VaultDatabase? = null
+        var openedMediaRepository: MediaRepository? = null
         try {
             openedDatabase = databaseFactory.open(unlockedDek)
             val repository = LoginRepository(openedDatabase, fieldEncryptor, unlockedDek)
+            openedMediaRepository = mediaRepositoryFactory.open(openedDatabase, unlockedDek)
             val suffixList = PublicSuffixList.fromAssets(appContext.assets)
             val autofillStore = RoomVaultAutofillStore(
                 database = openedDatabase,
@@ -400,12 +412,17 @@ public class VaultSessionCoordinator(
             database = openedDatabase
             dek = unlockedDek
             loginRepository = repository
+            mediaRepository = openedMediaRepository
+            MediaSession.install(openedMediaRepository)
             LoginUiSession.install { repository }
             AutofillDependencies.install(UnlockedAutofillDependencyProvider(autofillStore))
             autofillAuthenticationHandler?.let(AutofillAuthentication::install)
                 ?: AutofillAuthentication.reset()
+            openedMediaRepository = null
         } catch (error: Throwable) {
             try {
+                MediaSession.clear()
+                openedMediaRepository?.close()
                 openedDatabase?.close()
             } finally {
                 unlockedDek.close()

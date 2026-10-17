@@ -23,9 +23,10 @@ public fun LoginListScreen(
     onOpen: (String) -> Unit,
     onNewLogin: () -> Unit,
     onHealth: () -> Unit,
+    onMediaVault: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsState()
-    LoginListScreen(state, onOpen, onNewLogin, onHealth)
+    LoginListScreen(state, onOpen, onNewLogin, onHealth, onMediaVault)
 }
 
 @Composable
@@ -34,6 +35,7 @@ public fun LoginListScreen(
     onOpen: (String) -> Unit,
     onNewLogin: () -> Unit,
     onHealth: () -> Unit,
+    onMediaVault: () -> Unit = {},
 ) {
     OfflineVaultTheme {
         Column(modifier = Modifier.fillMaxSize().systemBarsPadding().padding(20.dp)) {
@@ -42,6 +44,7 @@ public fun LoginListScreen(
             Column(modifier = Modifier.padding(vertical = 16.dp)) {
                 TerminalButton("NEW LOGIN", onNewLogin)
                 TerminalButton("PASSWORD HEALTH", onHealth)
+                TerminalButton("MEDIA VAULT", onMediaVault)
             }
             when {
                 state.loading -> Text("Loading logins…", color = MaterialTheme.colorScheme.primary)

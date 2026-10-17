@@ -142,8 +142,8 @@ and terminal Compose screens under `app/src/main/java/com/example/offlinevault/u
   field. Passwords and TOTP secrets are not read by the list projection.
 - Detail secrets are held in `CharArray`/`ByteArray` wrappers, revealed on demand,
   masked after 20 seconds and on `ON_PAUSE`, and cleared when the view model is
-  cleared. Revealed password characters render green letters, amber digits, and
-  red symbols.
+  cleared. Secret values use JetBrains Mono; general UI uses the premium sans
+  serif Material typography.
 - Password history rotates newest-first through indexes `0..4` and encrypts each
   record with AES-GCM and exact AAD `history|<entryUuid>|<index>`.
 - TOTP QR decoding uses the bundled `com.google.zxing:core:3.5.3` artifact.
@@ -166,3 +166,35 @@ The launcher host is `com.example.offlinevault.ui.MainActivity`. It uses direct
 state switching rather than an animated navigation host and routes between
 setup, lock, and the Phase 2 login feature only after the session coordinator
 has completed the corresponding security operation.
+
+## Phase 3: Secure Media Vault
+
+The Media Vault is available from the unlocked login list and from `SEND`
+share intents. Imports are foreground WorkManager jobs and accept only
+`content://` URIs. The worker reports byte progress and non-secret MIME/size
+metadata while `MediaVaultRepository` streams the source through Tink's
+`AES256_GCM_HKDF_4KB` `StreamingAead` into `filesDir/vault/<uuid>`; no original
+name or extension is used on disk, and the source is never deleted implicitly.
+
+Media metadata is encoded into one deterministic payload and encrypted into
+the existing Room EAV `entry_fields` row using the exact AAD binding
+`entry_fields|<entryUuid>|media_metadata|1`. File streams use a separate
+purpose-bound AAD value `offline-vault/media/<entryUuid>/v1`. Successful imports
+are decrypted and SHA-256 verified before the metadata transaction is written.
+
+The streaming keyset is stored only as a Tink `EncryptedKeyset`, wrapped by the
+unlocked DEK and then protected by the existing `EncryptedSharedPreferences`.
+The process-local media session, thumbnail LRU, and PDF temp-file registry are
+cleared before the vault DEK is released on lock.
+
+- Image thumbnails use a bounded in-memory `LruCache`; there is no Coil disk
+  cache and no thumbnail file.
+- Video and audio use a Media3 ExoPlayer `DataSource` backed by Tink's
+  seekable decrypting channel, so seeking never creates a plaintext staging
+  file.
+- PDFs are decrypted only to a randomly named file under
+  `noBackupFilesDir/tmp/`, rendered through `PdfRenderer`, and deleted when the
+  viewer closes or the session locks.
+- After verified encryption, the user sees the explicit disclaimer
+  `DELETES VIA SYSTEM. FLASH STORAGE MAY RETAIN FRAGMENTS.` before a
+  `MediaStore.createDeleteRequest()` or SAF deletion is launched.

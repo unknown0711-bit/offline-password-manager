@@ -5,6 +5,9 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.example.offlinevault.data.VaultDatabaseFactory
+import com.example.offlinevault.media.MediaKeysetStore
+import com.example.offlinevault.media.MediaRepositoryFactory
+import com.example.offlinevault.media.SharedPreferencesMediaKeysetBackend
 import com.example.offlinevault.security.AesGcmFieldEncryptor
 import com.example.offlinevault.security.BiometricStrongBoxKeyWrapper
 import com.example.offlinevault.security.BootClock
@@ -52,6 +55,20 @@ public object SessionModule {
 
     @Provides
     @Singleton
+    public fun provideMediaKeysetStore(
+        @Named(SESSION_PREFERENCES) preferences: SharedPreferences,
+    ): MediaKeysetStore = MediaKeysetStore(SharedPreferencesMediaKeysetBackend(preferences))
+
+    @Provides
+    @Singleton
+    public fun provideMediaRepositoryFactory(
+        @ApplicationContext context: Context,
+        fieldEncryptor: AesGcmFieldEncryptor,
+        keysetStore: MediaKeysetStore,
+    ): MediaRepositoryFactory = MediaRepositoryFactory(context, fieldEncryptor, keysetStore)
+
+    @Provides
+    @Singleton
     public fun provideMasterPasswordBootGate(
         @Named(SESSION_PREFERENCES) preferences: SharedPreferences,
         clock: BootClock,
@@ -68,6 +85,7 @@ public object SessionModule {
         databaseFactory: VaultDatabaseFactory,
         fieldEncryptor: AesGcmFieldEncryptor,
         biometricWrapper: BiometricStrongBoxKeyWrapper,
+        mediaRepositoryFactory: MediaRepositoryFactory,
     ): VaultSessionCoordinator = VaultSessionCoordinator(
         context = context,
         keyManager = keyManager,
@@ -77,6 +95,7 @@ public object SessionModule {
         databaseFactory = databaseFactory,
         fieldEncryptor = fieldEncryptor,
         biometricWrapper = biometricWrapper,
+        mediaRepositoryFactory = mediaRepositoryFactory,
     )
 }
 

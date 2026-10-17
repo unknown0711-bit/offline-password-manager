@@ -44,5 +44,6 @@ data class VaultEntry(
 enum class EntryType(val databaseValue: String) {
     LOGIN("login"),
     CARD("card"),
-    SECURE_NOTE("secure_note")
+    SECURE_NOTE("secure_note"),
+    MEDIA("media")
 }

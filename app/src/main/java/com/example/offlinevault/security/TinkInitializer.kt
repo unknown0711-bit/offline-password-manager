@@ -1,6 +1,7 @@
 package com.example.offlinevault.security
 
 import com.google.crypto.tink.config.TinkConfig
+import com.google.crypto.tink.streamingaead.StreamingAeadConfig
 import java.security.GeneralSecurityException
 
 /**
@@ -22,6 +23,7 @@ public object TinkInitializer {
         synchronized(this) {
             if (!initialized) {
                 TinkConfig.register()
+                StreamingAeadConfig.register()
                 initialized = true
             }
         }

@@ -71,6 +71,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("androidx.work:work-runtime-ktx:2.10.0")
+    implementation("androidx.media3:media3-exoplayer:1.5.1")
+    implementation("androidx.media3:media3-ui:1.5.1")
 
     implementation("com.google.dagger:hilt-android:2.52")
     kapt("com.google.dagger:hilt-compiler:2.52")

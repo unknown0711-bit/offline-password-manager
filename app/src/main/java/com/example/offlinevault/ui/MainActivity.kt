@@ -1,6 +1,7 @@
 package com.example.offlinevault.ui
 
 import android.os.Bundle
+import android.net.Uri
 import androidx.activity.compose.setContent
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
@@ -14,6 +15,8 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import com.example.offlinevault.login.LoginRepository
+import com.example.offlinevault.media.MediaSession
+import com.example.offlinevault.media.MediaVaultScreen
 import com.example.offlinevault.session.VaultSessionCoordinator
 import com.example.offlinevault.session.VaultSessionResult
 import com.example.offlinevault.session.sessionCoordinator
@@ -40,9 +43,11 @@ public class MainActivity : FragmentActivity() {
     private lateinit var hostRoute: MutableState<HostRoute>
     private var pendingSetupPassword: CharArray? = null
     private var pendingSetupPhrase: CharArray? = null
+    internal var pendingSharedUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        pendingSharedUri = extractSharedUri(intent)
         window.setStatusBarColor(android.graphics.Color.BLACK)
         window.setNavigationBarColor(android.graphics.Color.BLACK)
         coordinator = sessionCoordinator(this)
@@ -50,6 +55,7 @@ public class MainActivity : FragmentActivity() {
             when {
                 coordinator.isSetupRequired() -> HostRoute.SETUP
                 coordinator.isUnlocked() -> HostRoute.LOGIN
+                pendingSharedUri != null && coordinator.isUnlocked() -> HostRoute.MEDIA
                 else -> HostRoute.LOCK
             },
         )
@@ -93,7 +99,7 @@ public class MainActivity : FragmentActivity() {
                             pendingPhrase,
                             result.cryptoObject,
                         )) {
-                            VaultSessionResult.Success -> hostRoute.value = HostRoute.LOGIN
+                            VaultSessionResult.Success -> hostRoute.value = routeAfterUnlock()
                             is VaultSessionResult.Failure -> retry()
                         }
                     } finally {
@@ -182,6 +188,19 @@ public class MainActivity : FragmentActivity() {
         wipePendingSetup()
         super.onDestroy()
     }
+
+    internal fun routeAfterUnlock(): HostRoute =
+        if (pendingSharedUri != null) HostRoute.MEDIA else HostRoute.LOGIN
+
+    private fun extractSharedUri(source: android.content.Intent?): Uri? {
+        if (source == null) return null
+        return when (source.action) {
+            android.content.Intent.ACTION_SEND,
+            android.content.Intent.ACTION_VIEW,
+            -> source.data ?: source.getParcelableExtra(android.content.Intent.EXTRA_STREAM)
+            else -> null
+        }?.takeIf { it.scheme == "content" }
+    }
 }
 
 @Composable
@@ -243,23 +262,36 @@ private fun OfflineVaultApp(
                 }
                 LockScreen(
                     viewModel = viewModel,
-                    onUnlocked = { onRouteChanged(HostRoute.LOGIN) },
+                    onUnlocked = { onRouteChanged(activity.routeAfterUnlock()) },
                     onBiometricRequested = viewModel::authenticateBiometric,
                 )
+            }
+            HostRoute.MEDIA -> {
+                val repository = coordinator.currentMediaRepository()
+                if (repository == null) {
+                    LaunchedEffect(Unit) { onRouteChanged(HostRoute.LOCK) }
+                } else {
+                    MediaVaultScreen(
+                        repository = repository,
+                        onBack = { onRouteChanged(HostRoute.LOGIN) },
+                        sharedUri = activity.pendingSharedUri,
+                        onSharedImportHandled = { activity.pendingSharedUri = null },
+                    )
+                }
             }
             HostRoute.LOGIN -> {
                 val repository = coordinator.currentLoginRepository()
                 if (repository == null) {
                     LaunchedEffect(Unit) { onRouteChanged(HostRoute.LOCK) }
                 } else {
-                    LoginFeatureNavigation(repository)
+                    LoginFeatureNavigation(repository, onMediaVault = { onRouteChanged(HostRoute.MEDIA) })
                 }
             }
         }
     }
 }
 
-private enum class HostRoute { SETUP, LOCK, LOGIN }
+internal enum class HostRoute { SETUP, LOCK, LOGIN, MEDIA }
 
 private fun VaultSessionResult.toAuthenticationResult(): AuthenticationResult = when (this) {
     VaultSessionResult.Success -> AuthenticationResult.Success
@@ -269,7 +301,7 @@ private fun VaultSessionResult.toAuthenticationResult(): AuthenticationResult = 
 private enum class LoginRoute { LIST, CREATE, DETAIL, GENERATOR, HEALTH }
 
 @Composable
-private fun LoginFeatureNavigation(repository: LoginRepository) {
+private fun LoginFeatureNavigation(repository: LoginRepository, onMediaVault: () -> Unit = {}) {
     var route by remember { mutableStateOf(LoginRoute.LIST) }
     var selectedEntry by remember { mutableStateOf<String?>(null) }
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -282,6 +314,7 @@ private fun LoginFeatureNavigation(repository: LoginRepository) {
                 onOpen = { selectedEntry = it; route = LoginRoute.DETAIL },
                 onNewLogin = { route = LoginRoute.CREATE },
                 onHealth = { route = LoginRoute.HEALTH },
+                onMediaVault = onMediaVault,
             )
         }
         LoginRoute.CREATE -> {
