@@ -266,6 +266,8 @@ private fun MediaPlayer(record: MediaRecord, repository: MediaRepository, contex
 private fun PdfViewer(record: MediaRecord, repository: MediaRepository, context: android.content.Context) {
     val manager = remember(context) { PdfTempFileManager(context) }
     var file by remember(record.entryId) { mutableStateOf<File?>(null) }
+    var pageIndex by remember(record.entryId) { mutableStateOf(0) }
+    var pageCount by remember(record.entryId) { mutableStateOf(0) }
     LaunchedEffect(record.entryId) {
         file = withContext(Dispatchers.IO) { manager.decryptToTemp(repository, record.entryId) }
     }
@@ -273,11 +275,27 @@ private fun PdfViewer(record: MediaRecord, repository: MediaRepository, context:
         onDispose { file?.let(manager::delete) }
     }
     if (file == null) CircularProgressIndicator()
-    else AndroidView(
-        factory = { PdfPageView(it) },
-        update = { it.setFile(file!!) },
-        modifier = Modifier.fillMaxWidth().height(520.dp),
-    )
+    else {
+        AndroidView(
+            factory = { PdfPageView(it) },
+            update = { view ->
+                view.setFile(file!!)
+                pageCount = view.pageCount
+                view.setPage(pageIndex)
+            },
+            modifier = Modifier.fillMaxWidth().height(520.dp),
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(
+                enabled = pageIndex > 0,
+                onClick = { pageIndex-- },
+            ) { Text("Previous page") }
+            TextButton(
+                enabled = pageCount > 0 && pageIndex + 1 < pageCount,
+                onClick = { pageIndex = (pageIndex + 1).coerceAtMost(pageCount - 1) },
+            ) { Text("Next page") }
+        }
+    }
 }
 
 @Composable
@@ -324,6 +342,10 @@ private class PdfPageView(context: android.content.Context) : View(context) {
     private var page: PdfRenderer.Page? = null
     private var bitmap: Bitmap? = null
     private var currentFile: File? = null
+    private var pageIndex: Int = -1
+
+    val pageCount: Int
+        get() = renderer?.pageCount ?: 0
 
     fun setFile(file: File) {
         if (currentFile == file) return
@@ -332,8 +354,20 @@ private class PdfPageView(context: android.content.Context) : View(context) {
         descriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
         renderer = PdfRenderer(descriptor!!)
         page = renderer!!.openPage(0)
+        pageIndex = -1
+        setPage(0)
+    }
+
+    fun setPage(index: Int) {
+        val activeRenderer = renderer ?: return
+        val target = index.coerceIn(0, activeRenderer.pageCount - 1)
+        if (target == pageIndex) return
+        page?.close()
+        bitmap?.recycle()
+        page = activeRenderer.openPage(target)
         bitmap = Bitmap.createBitmap(page!!.width, page!!.height, Bitmap.Config.ARGB_8888)
         page!!.render(bitmap!!, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+        pageIndex = target
         invalidate()
     }
 
@@ -358,5 +392,6 @@ private class PdfPageView(context: android.content.Context) : View(context) {
         descriptor = null
         bitmap = null
         currentFile = null
+        pageIndex = -1
     }
 }
