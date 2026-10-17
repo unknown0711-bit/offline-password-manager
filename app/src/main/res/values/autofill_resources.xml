@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="autofill_locked_message">&gt; VAULT LOCKED // TAP TO UNLOCK</string>
+    <string name="autofill_warning_message">! PACKAGE / SIGNATURE MISMATCH</string>
+    <string name="autofill_service_description">Offline Vault password autofill</string>
+    <string name="autofill_auth_message">&gt; VAULT AUTHENTICATION HANDOFF</string>
+    <string name="autofill_credential_placeholder_title">Offline Vault</string>
+    <string name="autofill_credential_placeholder_username">u***r@example.com</string>
+    <string name="autofill_abort">[ ABORT ]</string>
+    <string name="autofill_fill_anyway">[ FILL ANYWAY ]</string>
+
+    <style name="Theme.OfflineVault.AutofillRow" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:colorAccent">@color/terminal_green</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">@color/vault_black</item>
+    </style>
+
+    <style name="AutofillTitle">
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textColor">@color/cyber_blue</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="AutofillValue">
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textColor">@color/terminal_green</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="AutofillWarning">
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textColor">@color/amber</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="AutofillAction" parent="@android:style/Widget.Material.Button.Borderless">
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textColor">@color/terminal_green</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:minHeight">40dp</item>
+    </style>
+</resources>

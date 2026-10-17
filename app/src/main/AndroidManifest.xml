@@ -21,6 +21,35 @@
         android:theme="@style/Theme.OfflineVault"
         android:usesCleartextTraffic="false"
         tools:replace="android:allowBackup,android:fullBackupContent">
-        <!-- The UI/activity is deliberately deferred to Phase 2. -->
+        <service
+            android:name=".autofill.VaultAutofillService"
+            android:description="@string/autofill_service_description"
+            android:exported="true"
+            android:permission="android.permission.BIND_AUTOFILL_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.autofill.AutofillService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.autofill"
+                android:resource="@xml/autofill_service" />
+        </service>
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.OfflineVault">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".autofill.AutofillAuthActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/Theme.OfflineVault" />
     </application>
 </manifest>

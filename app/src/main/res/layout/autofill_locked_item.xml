@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/vault_black"
+    android:gravity="center_vertical"
+    android:minHeight="52dp"
+    android:orientation="vertical"
+    android:paddingStart="16dp"
+    android:paddingTop="14dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="14dp"
+    android:theme="@style/Theme.OfflineVault.AutofillRow">
+
+    <TextView
+        android:id="@+id/autofill_locked_message"
+        style="@style/AutofillValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+         android:text="@string/autofill_locked_message"
+        android:textColor="@color/terminal_green" />
+</LinearLayout>

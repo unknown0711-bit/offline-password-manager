@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/vault_black"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:theme="@style/Theme.OfflineVault.AutofillRow">
+
+    <TextView
+        android:id="@+id/autofill_warning_message"
+        style="@style/AutofillWarning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+         android:text="@string/autofill_warning_message" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/autofill_warning_abort"
+            style="@style/AutofillAction"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+             android:text="@string/autofill_abort" />
+
+        <Button
+            android:id="@+id/autofill_warning_fill_anyway"
+            style="@style/AutofillAction"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+             android:text="@string/autofill_fill_anyway" />
+    </LinearLayout>
+</LinearLayout>

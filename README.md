@@ -80,3 +80,37 @@ database with `VaultDatabaseFactory`, and close both the database and DEK when
 the locked state is entered.
 
 The production BIP39 asset is `app/src/main/assets/bip39_english.txt`.
+
+## Phase 2: Logins and Autofill
+
+Phase 2 adds the login feature under `app/src/main/java/com/example/offlinevault/login/`
+and terminal Compose screens under `app/src/main/java/com/example/offlinevault/ui/`.
+
+- The login list decrypts only title, username, tags, and the presence of a TOTP
+  field. Passwords and TOTP secrets are not read by the list projection.
+- Detail secrets are held in `CharArray`/`ByteArray` wrappers, revealed on demand,
+  masked after 20 seconds and on `ON_PAUSE`, and cleared when the view model is
+  cleared. Revealed password characters render green letters, amber digits, and
+  red symbols.
+- Password history rotates newest-first through indexes `0..4` and encrypts each
+  record with AES-GCM and exact AAD `history|<entryUuid>|<index>`.
+- TOTP QR decoding uses the bundled `com.google.zxing:core:3.5.3` artifact.
+  Camera frames are accepted in memory and never written to disk.
+- Sensitive clipboard copies use API 33 `EXTRA_IS_SENSITIVE` and a durable
+  WorkManager clear after 30 seconds. Call `LoginUiSession.lock()` from the
+  Phase 1 lock transition to clear the clipboard immediately and remove the UI
+  repository provider.
+- `VaultAutofillService` uses RemoteViews layouts, a bundled JetBrains Mono font,
+  and the bundled Mozilla Public Suffix List at
+  `app/src/main/assets/autofill/public_suffix_list.dat`. Matching is by eTLD+1,
+  not string suffixes. The service fails closed while locked.
+- Install an `AutofillAuthenticationHandler` with
+  `AutofillAuthentication.install(...)` to connect the Phase 1 unlock prompt to
+  the locked autofill row. Install a `LoginUiSessionProvider` with
+  `LoginUiSession.install(...)` after the unlocked SQLCipher database and DEK
+  session are ready. Both process-local seams default to locked/null.
+
+The launcher host is `com.example.offlinevault.ui.MainActivity`. It deliberately
+shows a locked terminal screen until the Phase 1 session coordinator installs
+the provider. It uses direct state switching rather than an animated navigation
+host.

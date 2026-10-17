@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.OfflineVault" parent="android:style/Theme.Material.NoActionBar">
-        <item name="android:fontFamily">monospace</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:statusBarColor">@color/vault_black</item>
         <item name="android:navigationBarColor">@color/vault_black</item>
